@@ -2,9 +2,10 @@
 
 #show: lypst_conf
 #show: lypst_title(
-  title: "COMP4128",
-  subtitle: "Topic Notes",
-  authors: ("Lloyd G W",),
+  title: "MATH2621 Notes",
+  subtitle: "Higher Complex Analysis",
+  authors: ("Lloyd-G-W",),
+  img: "images/unsw.png",
 )
 
 = This is a main heading
@@ -37,6 +38,12 @@
     hello.
   ]
 ]
+
+```cpp
+for(int i = 0; i < 23; ++i){
+  x = 23 + 5
+}
+```
 
 #lemma("test")[
   this is a test. I don't know if this is good or not.

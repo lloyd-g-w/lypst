@@ -3,7 +3,7 @@
     columns: 2,
     margin: (top: 1.8cm, left: 1.5cm, right: 1.5cm, bottom: 1.8cm),
   )
-  #set text(size: 11pt)
+  #set text(size: 11pt, font: "New Computer Modern")
   #set par(justify: true)
   #set heading(numbering: "1.1")
 
@@ -13,21 +13,42 @@
 // Returns a lambda that takes in doc as an argument
 #let lypst_title(
   title: "LYPST",
-  subtitle: "",
+  subtitle: none,
   authors: (none,),
+  img: none,
 ) = doc => [
   #page(columns: 1, margin: 3cm)[
-    #v(30%)
-    #text(size: 60pt, weight: 800)[#title]\ \
-    #text(size: 30pt)[#subtitle]\ \
-    #for (i, author) in authors.enumerate() {
-      if (author == none) { continue }
-      if (i == authors.len() - 1) { [#author.] } else { [#author, ] }
-    }
+    #align(center)[
+
+      #if (img != none) {
+        [#image(img, height: 30%)]
+      }
+      #v(10%)
+      #text(size: 30pt)[#smallcaps(title)]\ \
+      #if (subtitle != none) {
+        [
+          #smallcaps(text(size: 30pt)[#subtitle])\ \
+        ]
+      }
+
+      #if (authors.len() == 1) {
+        smallcaps(authors.at(0))
+      } else if (authors.len() == 2) {
+        smallcaps(authors.at(0) + " and " + authors.at(1))
+      } else if (authors != none) {
+        for (i, author) in authors.enumerate() {
+          if (i == authors.len() - 1) {
+            smallcaps("and " + author)
+          } else {
+            smallcaps(author + ", ")
+          }
+        }
+      }
+    ]
 
     #pagebreak(weak: true)
+    #outline()
   ]
-  #outline()
   #doc
 ]
 
