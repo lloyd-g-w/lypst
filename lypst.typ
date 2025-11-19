@@ -1,26 +1,40 @@
+#import "@preview/chic-hdr:0.5.0": *
+
 #let lypst_boxes = (
-  (name: "", colour: rgb(38, 70, 83)),
-  (name: "Theorem", colour: rgb(42, 157, 143)),
-  (name: "Lemma", colour: rgb(39, 125, 161)),
-  (name: "Proof", colour: rgb(231, 111, 81)),
-  (name: "Code", colour: rgb(184, 184, 184)),
+  (name: "", colour: rgb("#e76f51")), // Generic
+  (name: "Note", colour: rgb("#264653")),
+  (name: "Definition", colour: rgb("#2a9d8f")),
+  (name: "Proof", colour: rgb("#5E548E")),
+  (name: "Lemma", colour: rgb("#f4a261")),
+  (name: "Theorem", colour: rgb("#e9c46a")),
+  (name: "Corollary", colour: rgb("#006400")),
+  (name: "Example", colour: rgb("#277da1")),
+  (name: "Exercise", colour: rgb("#4a8f97")),
+  (name: "Problem", colour: rgb("#1b4965")),
+  (name: "Code", colour: rgb("#adadad")),
 )
 
-#let lypst_conf(doc) = [
+
+#let lypst_state = state("lypst_state", (header_right: "2025, Term 3"))
+
+#let lypst_conf(header_right: "2025, Term 2", doc) = [
+
+  #lypst_state.update(old => (header_right: header_right))
 
   // Packages
   #import "@preview/zebraw:0.6.0": *
-  #show: zebraw.with(lang: false, background-color: 0)
 
+  // Custom code blocks (mainly for line numbers)
+  #show: zebraw.with(lang: false, background-color: 0)
 
   #set page(
     columns: 2,
     margin: (top: 1.8cm, left: 1.5cm, right: 1.5cm, bottom: 1.8cm),
+    numbering: "1",
   )
   #set text(size: 11pt, font: "New Computer Modern")
   #set par(justify: true)
   #set heading(numbering: "1.1")
-
 
   // Set a rule where each new depth == 1 heading resets counter
   // of each lypst box
@@ -28,14 +42,39 @@
     if (it.depth == 1) {
       for box in lypst_boxes {
         counter(box.name).update(0)
+        counter(figure.where(kind: box.name)).update(0)
       }
     }
     it
   }
 
+  #show ref: it => {
+    let el = it.element
+    if el != none and el.func() == figure {
+      // Check if the figure kind matches one of our defined boxes
+      let is_lypst = lypst_boxes.any(b => b.name == el.kind)
+
+      if is_lypst {
+        let loc = el.location()
+        // Get Chapter number AT THE LOCATION of the theorem
+        let ch_count = counter(heading).at(loc)
+        let ch_num = if ch_count.len() > 0 { ch_count.first() } else { 0 }
+
+        // Get Theorem number AT THE LOCATION of the theorem
+        let thm_num = counter(figure.where(kind: el.kind)).at(loc).first()
+
+        // Generate the link text
+        link(loc)[#el.supplement #ch_num.#thm_num]
+      } else {
+        it
+      }
+    } else {
+      it
+    }
+  }
+
   #doc
 ]
-
 
 // Returns a lambda that takes in doc as an argument
 #let lypst_title(
@@ -44,7 +83,7 @@
   authors: (none,),
   img: none,
 ) = doc => [
-  #page(columns: 1, margin: 2cm)[
+  #page(columns: 1, margin: 2cm, numbering: none)[
     #align(center)[
 
       #if (img != none) {
@@ -73,18 +112,17 @@
       }
     ]
 
-    #pagebreak(weak: true)
+  ]
+  #page(columns: 1, margin: 2cm, numbering: "i")[
     #outline()
   ]
   #doc
 ]
 
 
-
 #let __template_block(title, body, block_name, colour, nonum) = {
   let block_counter = counter(block_name)
   let bg_colour = colour.lighten(90%)
-
   let border_widths = (left: 3pt, rest: 1pt)
 
   let title_content = block(width: 80%)[
@@ -117,8 +155,7 @@
     ]
   ]
 
-
-  block(breakable: false, width: 100%)[
+  let final_block = block(breakable: false, width: 100%)[
     #if (not nonum) { block_counter.step() }
 
     #pad(left: 8pt, hide(title_content))
@@ -142,6 +179,24 @@
 
     #place(top + left, dx: 8pt, title_content)
   ]
+
+  // figure wrapper for refs
+  if nonum {
+    final_block
+  } else {
+    figure(
+      kind: block_name,
+      supplement: block_name,
+      outlined: false,
+      placement: none,
+      caption: none,
+      numbering: "1", // internal counting only
+    )[
+      #align(left)[
+        #final_block
+      ]
+    ]
+  }
 }
 
 #let nonum = "lypst_nonum_flag"
@@ -170,9 +225,80 @@
 }
 
 #let generic = make_block(lypst_boxes.at(0))
-#let theorem = make_block(lypst_boxes.at(1))
-#let lemma = make_block(lypst_boxes.at(2))
+#let note = make_block(lypst_boxes.at(1))
+#let definition = make_block(lypst_boxes.at(2))
 #let proof = make_block(lypst_boxes.at(3))
-#let code = make_block(lypst_boxes.at(4))
+#let lemma = make_block(lypst_boxes.at(4))
+#let theorem = make_block(lypst_boxes.at(5))
+#let corollary = make_block(lypst_boxes.at(6))
+#let example = make_block(lypst_boxes.at(7))
+#let exercise = make_block(lypst_boxes.at(8))
+#let problem = make_block(lypst_boxes.at(9))
+#let code = make_block(lypst_boxes.at(10))
 
+// CHIC
 
+// Custom chic function for finding heading num
+#let chic-heading-level(dir: "next", fill: false, level: 2) = context {
+  let loc = here()
+  let headings = array(()) // Array for storing headings
+
+  // Get all the headings in the given direction
+  if dir == "next" {
+    headings = query(
+      selector(heading).after(loc),
+    ).rev()
+  } else if dir == "prev" {
+    headings = query(
+      selector(heading).before(loc),
+    )
+  }
+
+  // If no headings were found, try the other direction if `fill` is true
+  if headings.len() == 0 and fill {
+    if dir == "next" {
+      headings = query(
+        selector(heading).before(loc),
+      )
+    } else if dir == "prev" {
+      headings = query(
+        selector(heading).after(loc),
+      ).rev()
+    }
+  }
+
+  // Now, get the proper heading (i.e. right ``level`` value)
+  // until the headings array is empty
+  let found = false
+  let return-heading = none
+  while not found and headings.len() > 0 {
+    return-heading = headings.pop()
+
+    // Check the level of the fetched heading
+    if return-heading.level <= level {
+      found = true
+    }
+  }
+
+  if found {
+    return return-heading.level
+  } else {
+    return
+  }
+}
+
+#let make_lypst_header = header => chic.with(
+  chic-header(
+    left-side: smallcaps(header),
+    right-side: smallcaps(context lypst_state.get().header_right),
+  ),
+  chic-footer(
+    right-side: chic-page-number(),
+  ),
+  chic-separator(
+    0.5pt,
+    on: "header",
+  ),
+  chic-offset(18pt),
+  chic-height(2cm),
+)

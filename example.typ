@@ -1,6 +1,7 @@
 #import "lypst.typ": *
 
-#show: lypst_conf
+#show: lypst_conf.with(header_right: "2025, Term 3")
+
 #show: lypst_title(
   title: "MATH2621 Notes",
   subtitle: "Higher Complex Analysis",
@@ -8,15 +9,24 @@
   img: "images/unsw.png",
 )
 
-= test
+
+#show: make_lypst_header("Section 2 -- Higher Complex Analysis")
+= This is interesting
+
 
 #theorem(nonum)[
   test
-]
-
-#theorem(title: "")[
+]#theorem()[
   test
 ]
+#theorem()[
+  test
+]
+#theorem()[
+  test
+] <label>
+
+@label
 #code(title: "this is code")[
   ```cpp
   for (int i = 0; i < N; ++i){
@@ -27,6 +37,16 @@
   ```
 ]
 
+= this is a test
+
+@label
+#theorem()[
+  test
+] <label2>
+
+
 #theorem(nonum)[
 ]
+
+@label2
 
