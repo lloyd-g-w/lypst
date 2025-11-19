@@ -32,7 +32,7 @@
     margin: (top: 1.8cm, left: 1.5cm, right: 1.5cm, bottom: 1.8cm),
     numbering: "1",
   )
-  #set text(size: 11pt, font: "New Computer Modern")
+  #set text(size: 12pt, font: "New Computer Modern")
   #set par(justify: true)
   #set heading(numbering: "1.1")
 
