@@ -11,6 +11,9 @@
 
 
 #show: make_lypst_header("Section 2 -- Higher Complex Analysis")
+#theorem()[
+  test
+]
 = This is interesting
 
 
@@ -46,6 +49,27 @@
 
 
 #theorem(nonum)[
+]
+
+#generic(title:"Hello", nonum)[
+  ```cpp
+  for (int i = 0; i < N; ++i){
+    for(int j = 0; j < N; ++j){
+
+    }
+  }
+  ```
+]
+
+#generic()[
+
+  ```cpp
+  for (int i = 0; i < N; ++i){
+    for(int j = 0; j < N; ++j){
+
+    }
+  }
+  ```
 ]
 
 @label2

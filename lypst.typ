@@ -1,7 +1,7 @@
 #import "@preview/chic-hdr:0.5.0": *
 
 #let lypst_boxes = (
-  (name: "", colour: rgb("#e76f51")), // Generic
+  (name: "Generic", colour: rgb("#e76f51")), // Generic
   (name: "Note", colour: rgb("#264653")),
   (name: "Definition", colour: rgb("#2a9d8f")),
   (name: "Proof", colour: rgb("#5E548E")),
@@ -125,33 +125,46 @@
   let bg_colour = colour.lighten(90%)
   let border_widths = (left: 3pt, rest: 1pt)
 
-  let title_content = block(width: 80%)[
-    #let optional_title = if (
-      title != none and title != ""
-    ) { [(#title)] } else {}
+  let is_generic = block_name == "Generic"
 
+  let optional_title_text = if (
+    title != none and title != ""
+  ) { if (not is_generic) { [(#title)] } else { [#title] } } else { none }
+
+  let has_title_content = (
+    not is_generic or optional_title_text != none or nonum == false
+  )
+
+  let final_title_text = text(weight: "bold")[
+    #if nonum {
+      if (is_generic) {
+        [#optional_title_text]
+      } else {
+        [#block_name #optional_title_text]
+      }
+    } else {
+      context {
+        let h_count = counter(heading).get()
+        if (is_generic) {
+          [#optional_title_text #h_count.first().#block_counter.display()]
+        } else {
+          [#block_name #h_count.first().#block_counter.display()
+            #optional_title_text
+          ]
+        }
+      }
+    }
+  ]
+
+
+  let title_content = block(width: 80%)[
     #block(
       fill: white,
       inset: 5pt,
       radius: 3pt,
       stroke: 1pt + colour,
     )[
-      #text(weight: "bold")[
-        #if nonum {
-          [#block_name #optional_title]
-        } else {
-          context {
-            let h_count = counter(heading).get()
-            if h_count.len() > 0 {
-              [#block_name #h_count.first().#block_counter.display()
-                #optional_title
-              ]
-            } else {
-              [#block_name #block_counter.display() #optional_title]
-            }
-          }
-        }
-      ]
+      #final_title_text
     ]
   ]
 
@@ -160,6 +173,11 @@
 
     #pad(left: 8pt, hide(title_content))
     #v(-2em)
+
+    #let rest_inset = 10pt
+    #let top_inset = if (has_title_content) {
+      13pt
+    } else { rest_inset }
 
     #block(
       width: 100%,
@@ -171,13 +189,15 @@
         width: 100%,
         fill: bg_colour,
         radius: 4pt,
-        inset: (top: 13pt, rest: 10pt),
+        inset: (top: top_inset, rest: rest_inset),
       )[
         #body
       ]
     ]
 
-    #place(top + left, dx: 8pt, title_content)
+    #if (has_title_content) {
+      place(top + left, dx: 8pt, title_content)
+    }
   ]
 
   // figure wrapper for refs
