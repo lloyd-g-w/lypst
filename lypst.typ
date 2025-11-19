@@ -1,11 +1,18 @@
 #let lypst_boxes = (
+  (name: "", colour: rgb(38, 70, 83)),
   (name: "Theorem", colour: rgb(42, 157, 143)),
   (name: "Lemma", colour: rgb(39, 125, 161)),
   (name: "Proof", colour: rgb(231, 111, 81)),
-  (name: "", colour: rgb(38, 70, 83)),
+  (name: "Code", colour: rgb(184, 184, 184)),
 )
 
 #let lypst_conf(doc) = [
+
+  // Packages
+  #import "@preview/zebraw:0.6.0": *
+  #show: zebraw.with(lang: false, background-color: 0)
+
+
   #set page(
     columns: 2,
     margin: (top: 1.8cm, left: 1.5cm, right: 1.5cm, bottom: 1.8cm),
@@ -32,7 +39,7 @@
 
 // Returns a lambda that takes in doc as an argument
 #let lypst_title(
-  title: "LYPST",
+  title: "Lypst",
   subtitle: none,
   authors: (none,),
   img: none,
@@ -73,87 +80,99 @@
 ]
 
 
-#let __template_block(title, body, block_name, colour) = {
+
+#let __template_block(title, body, block_name, colour, nonum) = {
   let block_counter = counter(block_name)
   let bg_colour = colour.lighten(90%)
-  
-  // Border thickness defined via inset of the outer container
+
   let border_widths = (left: 3pt, rest: 1pt)
 
-  // We define the title content once so we can use it twice (hidden & visible)
-  let title_content = block(
-    fill: white, // White background masks the border behind it
-    inset: 5pt,
-    radius: 3pt,
-    stroke: 1pt + colour,
-  )[
-    #text(weight: "bold")[
-      #context {
-        let h_count = counter(heading).get()
-        if h_count.len() > 0 {
-          [#block_name #h_count.first().#block_counter.display() (#title)]
+  let title_content = block(width: 80%)[
+    #let optional_title = if (
+      title != none and title != ""
+    ) { [(#title)] } else {}
+
+    #block(
+      fill: white,
+      inset: 5pt,
+      radius: 3pt,
+      stroke: 1pt + colour,
+    )[
+      #text(weight: "bold")[
+        #if nonum {
+          [#block_name #optional_title]
         } else {
-          [#block_name #block_counter.display() (#title)]
+          context {
+            let h_count = counter(heading).get()
+            if h_count.len() > 0 {
+              [#block_name #h_count.first().#block_counter.display()
+                #optional_title
+              ]
+            } else {
+              [#block_name #block_counter.display() #optional_title]
+            }
+          }
         }
-      }
+      ]
     ]
   ]
 
+
   block(breakable: false, width: 100%)[
-    #block_counter.step()
+    #if (not nonum) { block_counter.step() }
 
-    // 1. SPACE RESERVATION (Hidden Title)
-    // This pushes the content box down based on the title's actual height.
-    // We use 'pad' to match the indentation of the placed title below.
     #pad(left: 8pt, hide(title_content))
-
-    // 2. OVERLAP ADJUSTMENT
-    // Pull the content box up so its top border sits 'inside' the title area.
-    // Adjust this value to change where the border intersects the title.
     #v(-2em)
 
-    // 3. MAIN CONTENT (Border + Background)
     #block(
       width: 100%,
-      fill: colour, 
+      fill: colour,
       radius: 5pt,
-      inset: border_widths, 
+      inset: border_widths,
     )[
       #block(
         width: 100%,
-        fill: bg_colour, 
-        radius: 4pt, 
+        fill: bg_colour,
+        radius: 4pt,
         inset: (top: 13pt, rest: 10pt),
       )[
         #body
       ]
     ]
 
-    // 4. VISIBLE TITLE
-    // We place this at top-left (0,0) of the wrapper.
-    // Since we reserved space with the hidden block at (0,0), this aligns perfectly.
-    // It is drawn last, so it sits ON TOP of the content box border.
     #place(top + left, dx: 8pt, title_content)
   ]
 }
 
+#let nonum = "lypst_nonum_flag"
 
 #let make_block(box) = {
   let block_name = box.name
   let block_colour = box.colour
-  (title, body, display_count: true, sub: false) => {
+
+  (..args) => {
+    let pos = args.pos()
+    let named = args.named()
+    let body = pos.last()
+    let flags = if pos.len() > 1 { pos.slice(0, -1) } else { () }
+    let is_nonum = named.at("nonum", default: false) or flags.contains(nonum)
+
+    let title = named.at("title", default: none)
+
     __template_block(
       title,
       body,
       block_name,
       block_colour,
+      is_nonum,
     )
   }
 }
 
-#let theorem = make_block(lypst_boxes.at(0))
-#let lemma = make_block(lypst_boxes.at(1))
-#let proof = make_block(lypst_boxes.at(2))
-#let generic = make_block(lypst_boxes.at(3))
+#let generic = make_block(lypst_boxes.at(0))
+#let theorem = make_block(lypst_boxes.at(1))
+#let lemma = make_block(lypst_boxes.at(2))
+#let proof = make_block(lypst_boxes.at(3))
+#let code = make_block(lypst_boxes.at(4))
 
 
