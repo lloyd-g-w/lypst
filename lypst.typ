@@ -44,7 +44,7 @@
   authors: (none,),
   img: none,
 ) = doc => [
-  #page(columns: 1, margin: 3cm)[
+  #page(columns: 1, margin: 2cm)[
     #align(center)[
 
       #if (img != none) {
