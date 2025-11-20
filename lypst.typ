@@ -32,7 +32,7 @@
     margin: (top: 1.8cm, left: 1.5cm, right: 1.5cm, bottom: 1.8cm),
     numbering: "1",
   )
-  #set text(size: 12pt, font: "New Computer Modern", lang:"en", region: "AU")
+  #set text(size: 12pt, font: "New Computer Modern", lang: "en", region: "AU")
   #set par(justify: true)
   #set heading(numbering: "1.1")
 
@@ -259,7 +259,7 @@
 // CHIC
 
 // Custom chic function for finding heading num
-#let chic-heading-level(dir: "next", fill: false, level: 2) = context {
+#let chic-heading-num(dir: "next", fill: false, level: 1) = context {
   let loc = here()
   let headings = array(()) // Array for storing headings
 
@@ -300,21 +300,44 @@
     }
   }
 
+
   if found {
-    return return-heading.level
+    let count_arr = counter(heading).at(return-heading.location())
+    let pattern = return-heading.numbering
+    
+    if pattern != none {
+      return numbering(pattern, ..count_arr)
+    } else {
+      return count_arr.map(str).join(".")
+    }
   } else {
-    return
+    return none
   }
 }
 
 #let make_lypst_auto_header = chic.with(
   chic-header(
-    left-side: smallcaps([Section #chic-heading-level() -- #chic-heading-name(fill: true)]),
-    right-side: smallcaps(context lypst_state.get().header_right),
+    left-side: grid(
+      columns: (1fr, auto),
+      // 1fr for title, auto for the date
+      // this is so the left text can extend beyond the middl
+      align: (bottom + left, bottom + right),
+
+      // The actual Left content
+      smallcaps([Section #chic-heading-num() -- #chic-heading-name(
+          fill: true,
+        )]),
+
+      // The actual Right content
+      smallcaps(context lypst_state.get().header_right),
+    ),
+    // right-side = none for zero width
+    right-side: none,
   ),
   chic-footer(
     right-side: chic-page-number(),
   ),
+
   chic-separator(
     0.5pt,
     on: "header",
@@ -325,8 +348,20 @@
 
 #let make_lypst_header = header => chic.with(
   chic-header(
-    left-side: smallcaps(header),
-    right-side: smallcaps(context lypst_state.get().header_right),
+    left-side: grid(
+      columns: (1fr, auto),
+      // 1fr for title, auto for the date
+      // this is so the left text can extend beyond the middl
+      align: (bottom + left, bottom + right),
+
+      // The actual Left content
+      smallcaps(header),
+
+      // The actual Right content
+      smallcaps(context lypst_state.get().header_right),
+    ),
+    // right-side = none for zero width
+    right-side: none,
   ),
   chic-footer(
     right-side: chic-page-number(),

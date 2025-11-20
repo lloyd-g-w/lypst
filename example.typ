@@ -51,7 +51,7 @@
 #theorem(nonum)[
 ]
 
-#generic(title:"Hello", nonum)[
+#generic(title: "Hello", nonum)[
   ```cpp
   for (int i = 0; i < N; ++i){
     for(int j = 0; j < N; ++j){
