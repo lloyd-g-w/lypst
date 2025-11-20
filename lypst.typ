@@ -307,6 +307,22 @@
   }
 }
 
+#let make_lypst_auto_header = chic.with(
+  chic-header(
+    left-side: smallcaps([Section #chic-heading-level() -- #chic-heading-name(fill: true)]),
+    right-side: smallcaps(context lypst_state.get().header_right),
+  ),
+  chic-footer(
+    right-side: chic-page-number(),
+  ),
+  chic-separator(
+    0.5pt,
+    on: "header",
+  ),
+  chic-offset(18pt),
+  chic-height(2cm),
+)
+
 #let make_lypst_header = header => chic.with(
   chic-header(
     left-side: smallcaps(header),
