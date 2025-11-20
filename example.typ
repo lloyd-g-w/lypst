@@ -12,7 +12,7 @@
 
 #show: make_lypst_header("Section 2 -- Higher Complex Analysis")
 #theorem()[
-  test
+  colour
 ]
 = This is interesting
 
