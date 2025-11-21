@@ -22,10 +22,16 @@
 #let parspace = 1.2em
 
 
-#let lypst_state = state("lypst_state", (header_right: "2025, Term 3"))
-#let lypst_conf(header_right: "2025, Term 2", doc) = [
+#let lypst_state = state("lypst_state", (
+  header_right: "2025, Term 3",
+  section_label: "Section",
+))
+#let lypst_conf(header_right: "2025, Term 2", section_label: "Section", doc) = [
 
-  #lypst_state.update(old => (header_right: header_right))
+  #lypst_state.update(old => (
+    header_right: header_right,
+    section_label: section_label,
+  ))
 
   // Custom code blocks (mainly for line numbers)
   #show: zebraw.with(lang: false, background-color: 0)
@@ -277,61 +283,63 @@
 
 // CHIC
 
-// Custom chic function for finding heading num
-#let chic-heading-num(dir: "next", fill: false, level: 2) = context {
+#let lypst-section-num(section-level: 1) = context {
   let loc = here()
-  let headings = array(()) // Array for storing headings
 
-  // Get all the headings in the given direction
-  if dir == "next" {
-    headings = query(
-      selector(heading).after(loc),
-    ).rev()
-  } else if dir == "prev" {
-    headings = query(
-      selector(heading).before(loc),
-    )
-  }
-
-  // If no headings were found, try the other direction if `fill` is true
-  if headings.len() == 0 and fill {
-    if dir == "next" {
-      headings = query(
-        selector(heading).before(loc),
-      )
-    } else if dir == "prev" {
-      headings = query(
-        selector(heading).after(loc),
-      ).rev()
-    }
-  }
-
-  // Now, get the proper heading (i.e. right ``level`` value)
-  // until the headings array is empty
-  let found = false
-  let return-heading = none
-  while not found and headings.len() > 0 {
-    return-heading = headings.pop()
-
-    // Check the level of the fetched heading
-    if return-heading.level <= level {
-      found = true
-    }
-  }
-
-
-  if found {
-    let count_arr = counter(heading).at(return-heading.location())
-    let pattern = return-heading.numbering
-
-    if pattern != none {
-      return numbering(pattern, ..count_arr)
-    } else {
-      return count_arr.map(str).join(".")
-    }
-  } else {
+  // 1. Find the nearest heading AFTER here()
+  let future = query(selector(heading).after(loc))
+  if future.len() == 0 {
     return none
   }
+  let nearest = future.first()
+
+  // 2. Now find the parent section of this nearest heading
+  //    by scanning backwards from that heading
+  let all_prev = query(selector(heading).before(nearest.location()))
+  let parent = none
+  for h in all_prev.rev() {
+    if h.level <= section-level {
+      parent = h
+      break
+    }
+  }
+
+  // 3. Return the section number
+  if parent != none {
+    let arr = counter(heading).at(parent.location())
+    if arr.len() > 0 {
+      return arr.first()
+    }
+  }
+  return none
+}
+
+#let lypst-section-name(section-level: 1) = context {
+  let loc = here()
+
+  // 1. Find the nearest heading AFTER here()
+  let future = query(selector(heading).after(loc))
+  if future.len() == 0 {
+    return none
+  }
+  let nearest = future.first()
+
+  // 2. Now find the parent section of this nearest heading
+  //    by scanning backwards from that heading
+  let all_prev = query(selector(heading).before(nearest.location()))
+  let parent = none
+  for h in all_prev.rev() {
+    if h.level <= section-level {
+      parent = h
+      break
+    }
+  }
+
+  // 3. Return the section number
+  if parent != none {
+    return parent.body
+  }
+  return none
 }
 
 #let make_lypst_auto_header = chic.with(
@@ -343,10 +351,9 @@
       align: (bottom + left, bottom + right),
 
       // The actual Left content
-      smallcaps([Section #chic-heading-num(level: 1) -- #chic-heading-name(
-          fill: true,
-          level: 1,
-        )]),
+      smallcaps([#context lypst_state.get().section_label #lypst-section-num()
+        --
+        #lypst-section-name()]),
 
       // The actual Right content
       smallcaps(context lypst_state.get().header_right),
