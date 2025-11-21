@@ -1,4 +1,6 @@
 #import "lypst.typ": *
+#import "@preview/cetz:0.4.2": canvas, draw
+#import "@preview/cetz-plot:0.1.3": plot
 
 #show: lypst_conf.with(header_right: "2025, Term 3")
 

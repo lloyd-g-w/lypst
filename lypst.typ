@@ -123,7 +123,7 @@
 #let __template_block(title, body, block_name, colour, nonum) = {
   let block_counter = counter(block_name)
   let bg_colour = colour.lighten(90%)
-  let border_widths = (left: 3pt, rest: 1pt)
+  let border_widths = (left: 3.5pt, rest: 1.5pt)
 
   let is_generic = block_name == "Generic"
 
