@@ -259,7 +259,7 @@
 // CHIC
 
 // Custom chic function for finding heading num
-#let chic-heading-num(dir: "next", fill: false, level: 1) = context {
+#let chic-heading-num(dir: "next", fill: false, level: 2) = context {
   let loc = here()
   let headings = array(()) // Array for storing headings
 
@@ -304,7 +304,7 @@
   if found {
     let count_arr = counter(heading).at(return-heading.location())
     let pattern = return-heading.numbering
-    
+
     if pattern != none {
       return numbering(pattern, ..count_arr)
     } else {
@@ -324,8 +324,9 @@
       align: (bottom + left, bottom + right),
 
       // The actual Left content
-      smallcaps([Section #chic-heading-num() -- #chic-heading-name(
+      smallcaps([Section #chic-heading-num(level: 1) -- #chic-heading-name(
           fill: true,
+          level: 1,
         )]),
 
       // The actual Right content
