@@ -18,8 +18,11 @@
 )
 
 
-#let lypst_state = state("lypst_state", (header_right: "2025, Term 3"))
+// Useful variables
+#let parspace = 1.2em
 
+
+#let lypst_state = state("lypst_state", (header_right: "2025, Term 3"))
 #let lypst_conf(header_right: "2025, Term 2", doc) = [
 
   #lypst_state.update(old => (header_right: header_right))
@@ -32,8 +35,10 @@
     margin: (top: 1.8cm, left: 1.5cm, right: 1.5cm, bottom: 1.8cm),
     numbering: "1",
   )
+
+
   #set text(size: 12pt, font: "New Computer Modern", lang: "en", region: "AU")
-  #set par(justify: true)
+  #set par(justify: true, spacing: parspace)
   #set heading(numbering: "1.1")
 
   // Set a rule where each new depth == 1 heading resets counter
@@ -120,69 +125,67 @@
 ]
 
 
-#let __template_block(title, body, block_name, colour, nonum) = {
-  let block_counter = counter(block_name)
-  let bg_colour = colour.lighten(90%)
-  let border_widths = (left: 3.5pt, rest: 1.5pt)
+#let __template_block(title, body, block_name, colour, nonum) = context {
+  layout(size => {
+    let block_counter = counter(block_name)
+    let bg_colour = colour.lighten(90%)
+    let border_widths = (left: 3.5pt, rest: 1.5pt)
 
-  let is_generic = block_name == "Generic"
+    let is_generic = block_name == "Generic"
 
-  let optional_title_text = if (
-    title != none and title != ""
-  ) { if (not is_generic) { [(#title)] } else { [#title] } } else { none }
+    let optional_title_text = if (title != none and title != "") {
+      if (not is_generic) { [(#title)] } else { [#title] }
+    } else { none }
 
-  let has_title_content = (
-    not is_generic or optional_title_text != none or nonum == false
-  )
+    let has_title_content = (
+      not is_generic or optional_title_text != none or nonum == false
+    )
 
-  let final_title_text = text(weight: "bold")[
-    #if nonum {
-      if (is_generic) {
-        [#optional_title_text]
-      } else {
-        [#block_name #optional_title_text]
-      }
-    } else {
-      context {
-        let h_count = counter(heading).get()
+    let final_title_text = text(weight: "bold")[
+      #if nonum {
         if (is_generic) {
-          [#optional_title_text #h_count.first().#block_counter.display()]
+          [#optional_title_text]
         } else {
-          [#block_name #h_count.first().#block_counter.display()
-            #optional_title_text
-          ]
+          [#block_name #optional_title_text]
+        }
+      } else {
+        context {
+          let h_count = counter(heading).get()
+          if (is_generic) {
+            [#optional_title_text #h_count.first().#block_counter.display()]
+          } else {
+            [#block_name #h_count.first().#block_counter.display()
+              #optional_title_text
+            ]
+          }
         }
       }
-    }
-  ]
-
-
-  // The two pts are for weird floating point errors
-  // that cause titles to think they are two lines
-  // when they render as one
-  let title_content = box(width: 80% + 2pt)[
-    #block(
-      fill: white,
-      inset: 0.6em,
-      radius: 3pt,
-      stroke: 1pt + colour,
-    )[
-      #final_title_text
     ]
-  ]
 
-  let final_block = block(breakable: false, width: 100%)[
-    #if (not nonum) { block_counter.step() }
+    // Use actual layout width here:
+    let title_width = 0.8 * size.width + 2pt
 
-    #pad(left: 8pt, hide(title_content))
-    #v(-2.15em)
+    let title_content = box(width: title_width)[
+      #block(
+        fill: white,
+        inset: 0.6em,
+        radius: 3pt,
+        stroke: 1pt + colour,
+      )[ #final_title_text ]
+    ]
 
-    #let rest_inset = 1.0em
-    #let top_inset = if (has_title_content) {
-      1.5em
-    } else { rest_inset }
+    // Measure in the *current* layout context
+    let title_height = measure(title_content).height
 
-    #block(
+    // How much blank space we always reserve above the body box.
+    // Needs to be >= (max expected title height) - gap.
+    let gap = -0.9em // gap between title and coloured box
+    let headroom = title_height + gap
+
+    let rest_inset = 1.0em
+    let top_inset = if has_title_content { 1.5em } else { rest_inset }
+
+    let main = block(
       width: 100%,
       fill: colour,
       radius: 5pt,
@@ -193,34 +196,47 @@
         fill: bg_colour,
         radius: 4pt,
         inset: (top: top_inset, rest: rest_inset),
-      )[
-        #body
-      ]
+      )[ #body ]
     ]
 
-    #if (has_title_content) {
-      place(top + left, dx: 8pt, title_content)
+    let content = block(breakable: false, width: 100%)[
+      #if (not nonum) { block_counter.step() }
+
+      // Reserve the space above the body box (independent of title height)
+      #if has_title_content {
+        v(headroom)
+      }
+
+      // The coloured theorem box itself
+      #main
+
+      // Draw the title: its *bottom* is (gap) above the top of `main`.
+      #if has_title_content {
+        place(
+          top + left,
+          dx: 8pt,
+          dy: headroom - gap - title_height,
+          title_content,
+        )
+      }
+    ]
+
+    // Wrap in a figure for refs if numbered
+    if nonum {
+      content
+    } else {
+      figure(
+        kind: block_name,
+        supplement: block_name,
+        outlined: false,
+        placement: none,
+        caption: none,
+        numbering: "1",
+      )[ #align(left)[#content] ]
     }
-  ]
-
-  // figure wrapper for refs
-  if nonum {
-    final_block
-  } else {
-    figure(
-      kind: block_name,
-      supplement: block_name,
-      outlined: false,
-      placement: none,
-      caption: none,
-      numbering: "1", // internal counting only
-    )[
-      #align(left)[
-        #final_block
-      ]
-    ]
-  }
+  })
 }
+
 
 #let nonum = "lypst_nonum_flag"
 
