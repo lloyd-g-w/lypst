@@ -1,4 +1,7 @@
+// Packages
+
 #import "@preview/chic-hdr:0.5.0": *
+#import "@preview/zebraw:0.6.0": *
 
 #let lypst_boxes = (
   (name: "Generic", colour: rgb("#e76f51")), // Generic
@@ -20,9 +23,6 @@
 #let lypst_conf(header_right: "2025, Term 2", doc) = [
 
   #lypst_state.update(old => (header_right: header_right))
-
-  // Packages
-  #import "@preview/zebraw:0.6.0": *
 
   // Custom code blocks (mainly for line numbers)
   #show: zebraw.with(lang: false, background-color: 0)
@@ -157,10 +157,13 @@
   ]
 
 
-  let title_content = block(width: 80%)[
+  // The two pts are for weird floating point errors
+  // that cause titles to think they are two lines
+  // when they render as one
+  let title_content = box(width: 80% + 2pt)[
     #block(
       fill: white,
-      inset: 5pt,
+      inset: 0.6em,
       radius: 3pt,
       stroke: 1pt + colour,
     )[
@@ -172,11 +175,11 @@
     #if (not nonum) { block_counter.step() }
 
     #pad(left: 8pt, hide(title_content))
-    #v(-2em)
+    #v(-2.15em)
 
-    #let rest_inset = 10pt
+    #let rest_inset = 1.0em
     #let top_inset = if (has_title_content) {
-      13pt
+      1.5em
     } else { rest_inset }
 
     #block(
