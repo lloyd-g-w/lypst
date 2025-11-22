@@ -297,10 +297,10 @@
   // - if we have a heading on this page, use the first one's location
   // - otherwise, fall back to the header's own location
   let base_loc = if on_page.len() > 0 {
-      on_page.first().location()
-    } else {
-      loc
-    }
+    on_page.first().location()
+  } else {
+    loc
+  }
 
   // Find the parent heading before base_loc
   let all_prev = query(selector(heading).before(base_loc))
@@ -330,10 +330,10 @@
   let on_page = after.filter(h => h.location().page() == page)
 
   let base_loc = if on_page.len() > 0 {
-      on_page.first().location()
-    } else {
-      loc
-    }
+    on_page.first().location()
+  } else {
+    loc
+  }
 
   let all_prev = query(selector(heading).before(base_loc))
   let parent = none
@@ -354,6 +354,7 @@
 
 #let make_lypst_auto_header = chic.with(
   chic-header(
+    side-width: (1fr, 0pt, -20pt),
     left-side: grid(
       columns: (1fr, auto),
       // 1fr for title, auto for the date
@@ -368,8 +369,6 @@
       // The actual Right content
       smallcaps(context lypst_state.get().header_right),
     ),
-    // right-side = none for zero width
-    right-side: none,
   ),
   chic-footer(
     right-side: chic-page-number(),
@@ -385,6 +384,7 @@
 
 #let make_lypst_header = header => chic.with(
   chic-header(
+    side-width: (1fr, 0pt, -20pt),
     left-side: grid(
       columns: (1fr, auto),
       // 1fr for title, auto for the date
@@ -397,8 +397,6 @@
       // The actual Right content
       smallcaps(context lypst_state.get().header_right),
     ),
-    // right-side = none for zero width
-    right-side: none,
   ),
   chic-footer(
     right-side: chic-page-number(),
@@ -410,3 +408,4 @@
   chic-offset(18pt),
   chic-height(2cm),
 )
+
