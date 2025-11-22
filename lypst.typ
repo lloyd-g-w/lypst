@@ -285,17 +285,25 @@
 
 #let lypst-section-num(section-level: 1) = context {
   let loc = here()
+  let page = loc.page()
 
-  // 1. Find the nearest heading AFTER here()
-  let future = query(selector(heading).after(loc))
-  if future.len() == 0 {
-    return none
-  }
-  let nearest = future.first()
+  // All headings after the header location
+  let after = query(selector(heading).after(loc))
 
-  // 2. Now find the parent section of this nearest heading
-  //    by scanning backwards from that heading
-  let all_prev = query(selector(heading).before(nearest.location()))
+  // Restrict to headings that are on the same page as the header
+  let on_page = after.filter(h => h.location().page() == page)
+
+  // Base location for searching the parent:
+  // - if we have a heading on this page, use the first one's location
+  // - otherwise, fall back to the header's own location
+  let base_loc = if on_page.len() > 0 {
+      on_page.first().location()
+    } else {
+      loc
+    }
+
+  // Find the parent heading before base_loc
+  let all_prev = query(selector(heading).before(base_loc))
   let parent = none
   for h in all_prev.rev() {
     if h.level <= section-level {
@@ -304,29 +312,30 @@
     }
   }
 
-  // 3. Return the section number
+  // Return that parent’s heading counter value
   if parent != none {
     let arr = counter(heading).at(parent.location())
     if arr.len() > 0 {
       return arr.first()
     }
   }
-  return none
+  none
 }
 
 #let lypst-section-name(section-level: 1) = context {
   let loc = here()
+  let page = loc.page()
 
-  // 1. Find the nearest heading AFTER here()
-  let future = query(selector(heading).after(loc))
-  if future.len() == 0 {
-    return none
-  }
-  let nearest = future.first()
+  let after = query(selector(heading).after(loc))
+  let on_page = after.filter(h => h.location().page() == page)
 
-  // 2. Now find the parent section of this nearest heading
-  //    by scanning backwards from that heading
-  let all_prev = query(selector(heading).before(nearest.location()))
+  let base_loc = if on_page.len() > 0 {
+      on_page.first().location()
+    } else {
+      loc
+    }
+
+  let all_prev = query(selector(heading).before(base_loc))
   let parent = none
   for h in all_prev.rev() {
     if h.level <= section-level {
@@ -335,12 +344,13 @@
     }
   }
 
-  // 3. Return the section number
   if parent != none {
-    return parent.body
+    parent.body
+  } else {
+    none
   }
-  return none
 }
+
 
 #let make_lypst_auto_header = chic.with(
   chic-header(
