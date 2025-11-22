@@ -131,116 +131,133 @@
 ]
 
 
-#let __template_block(title, body, block_name, colour, nonum) = context {
-  layout(size => {
-    let block_counter = counter(block_name)
-    let bg_colour = colour.lighten(90%)
-    let border_widths = (left: 3.5pt, rest: 1.5pt)
+#let __template_block(title, body, block_name, colour, nonum) = {
+  let inner = context {
+    layout(size => {
+      let block_counter = counter(block_name)
+      let bg_colour = colour.lighten(90%)
+      let border_widths = (left: 3.5pt, rest: 1.5pt)
 
-    let is_generic = block_name == "Generic"
+      let is_generic = block_name == "Generic"
 
-    let optional_title_text = if (title != none and title != "") {
-      if (not is_generic) { [(#title)] } else { [#title] }
-    } else { none }
+      let optional_title_text = if (title != none and title != "") {
+        if (not is_generic) { [(#title)] } else { [#title] }
+      } else { none }
 
-    let has_title_content = (
-      not is_generic or optional_title_text != none or nonum == false
-    )
+      let has_title_content = (
+        not is_generic or optional_title_text != none or nonum == false
+      )
 
-    let final_title_text = text(weight: "bold")[
-      #if nonum {
-        if (is_generic) {
-          [#optional_title_text]
-        } else {
-          [#block_name #optional_title_text]
-        }
-      } else {
-        context {
-          let h_count = counter(heading).get()
+      let final_title_text = text(weight: "bold")[
+        #if nonum {
           if (is_generic) {
-            [#optional_title_text #h_count.first().#block_counter.display()]
+            [#optional_title_text]
           } else {
-            [#block_name #h_count.first().#block_counter.display()
-              #optional_title_text
-            ]
+            [#block_name #optional_title_text]
+          }
+        } else {
+          context {
+            let h_count = counter(heading).get()
+            if (is_generic) {
+              [#optional_title_text #h_count.first().#block_counter.display()]
+            } else {
+              [#block_name #h_count.first().#block_counter.display()
+                #optional_title_text
+              ]
+            }
           }
         }
-      }
-    ]
+      ]
 
-    // Use actual layout width here:
-    let title_width = 0.8 * size.width + 2pt
+      // Use actual layout width here:
+      let title_width = 0.8 * size.width + 2pt
 
-    let title_content = box(width: title_width)[
-      #block(
-        fill: white,
-        inset: 0.6em,
-        radius: 3pt,
-        stroke: 1pt + colour,
-      )[ #final_title_text ]
-    ]
+      let title_content = box(width: title_width)[
+        #block(
+          fill: white,
+          inset: 0.6em,
+          radius: 3pt,
+          stroke: 1pt + colour,
+        )[ #final_title_text ]
+      ]
 
-    // Measure in the *current* layout context
-    let title_height = measure(title_content).height
+      // Measure in the *current* layout context
+      let title_height = measure(title_content).height
 
-    // How much blank space we always reserve above the body box.
-    // Needs to be >= (max expected title height) - gap.
-    let gap = -0.9em // gap between title and coloured box
-    let headroom = title_height + gap
+      // How much blank space we always reserve above the body box.
+      // Needs to be >= (max expected title height) - gap.
+      let gap = -0.9em // gap between title and coloured box
+      let headroom = title_height + gap
 
-    let rest_inset = 1.0em
-    let top_inset = if has_title_content { 1.5em } else { rest_inset }
+      let rest_inset = 1.0em
+      let top_inset = if has_title_content { 1.5em } else { rest_inset }
 
-    let main = block(
-      width: 100%,
-      fill: colour,
-      radius: 5pt,
-      inset: border_widths,
-    )[
-      #block(
+      let main = block(
         width: 100%,
-        fill: bg_colour,
-        radius: 4pt,
-        inset: (top: top_inset, rest: rest_inset),
-      )[ #body ]
-    ]
+        fill: colour,
+        radius: 5pt,
+        inset: border_widths,
+      )[
+        #block(
+          width: 100%,
+          fill: bg_colour,
+          radius: 4pt,
+          inset: (top: top_inset, rest: rest_inset),
+        )[ #body ]
+      ]
 
-    let content = block(breakable: false, width: 100%)[
-      #if (not nonum) { block_counter.step() }
+      let content = block(breakable: false, width: 100%)[
+        #if (not nonum) { block_counter.step() }
 
-      // Reserve the space above the body box (independent of title height)
-      #if has_title_content {
-        v(headroom)
-      }
+        // Reserve the space above the body box (independent of title height)
+        #if has_title_content {
+          v(headroom)
+        }
 
-      // The coloured theorem box itself
-      #main
+        // The coloured theorem box itself
+        #main
 
-      // Draw the title: its *bottom* is (gap) above the top of `main`.
-      #if has_title_content {
-        place(
-          top + left,
-          dx: 8pt,
-          dy: headroom - gap - title_height,
-          title_content,
-        )
-      }
-    ]
+        // Draw the title: its *bottom* is (gap) above the top of `main`.
+        #if has_title_content {
+          place(
+            top + left,
+            dx: 8pt,
+            dy: headroom - gap - title_height,
+            title_content,
+          )
+        }
+      ]
 
-    // Wrap in a figure for refs if numbered
-    if nonum {
       content
-    } else {
-      figure(
-        kind: block_name,
-        supplement: block_name,
-        outlined: false,
-        placement: none,
-        caption: none,
-        numbering: "1",
-      )[ #align(left)[#content] ]
-    }
-  })
+      //
+      // // Wrap in a figure for refs if numbered
+      // if nonum {
+      //   content
+      // } else {
+      //   figure(
+      //     kind: block_name,
+      //     supplement: block_name,
+      //     outlined: false,
+      //     placement: none,
+      //     caption: none,
+      //     numbering: "1",
+      //   )[ #align(left)[#content] ]
+      // }
+    })
+  }
+
+  if nonum {
+    inner
+  } else {
+    figure(
+      kind: block_name,
+      supplement: block_name,
+      outlined: false,
+      placement: none,
+      caption: none,
+      numbering: "1",
+    )[ #align(left)[#inner] ]
+  }
 }
 
 
@@ -408,4 +425,3 @@
   chic-offset(18pt),
   chic-height(2cm),
 )
-

@@ -46,11 +46,13 @@
 
 @label
 #theorem()[
-  test
+  test test
+  this is actually working?
 ] <label2>
 
 
 #theorem(nonum)[
+  this is a test test dfgmokdmfgokm
 ]
 
 #generic(title: "Hello", nonum)[
