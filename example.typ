@@ -8,7 +8,8 @@
   title: "MATH2621 Notes",
   subtitle: "Higher Complex Analysis",
   authors: ("Lloyd-G-W",),
-  img: "images/unsw.png",
+  img: "images/logo.svg",
+  img-height: 40%,
 )
 
 

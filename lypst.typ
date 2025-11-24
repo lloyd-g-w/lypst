@@ -93,14 +93,15 @@
   subtitle: none,
   authors: (none,),
   img: none,
+  img-height: 35%,
 ) = doc => [
   #page(columns: 1, margin: 2cm, numbering: none)[
     #align(center)[
 
       #if (img != none) {
-        [#image(img, height: 30%)]
+        [#image(img, height: img-height)]
       }
-      #v(10%)
+      #v(5%)
       #text(size: 30pt)[#smallcaps(title)]\ \
       #if (subtitle != none) {
         [
