@@ -19,7 +19,7 @@
 
 
 // Useful variables
-#let parspace = 1.2em
+#let parspace = 0.55em
 
 
 #let lypst_state = state("lypst_state", (
@@ -44,8 +44,17 @@
 
 
   #set text(size: 12pt, font: "New Computer Modern", lang: "en", region: "AU")
-  #set par(justify: true, spacing: parspace)
   #set heading(numbering: "1.1")
+
+  #set par(
+    leading: 0.55em,
+    spacing: parspace,
+    first-line-indent: 1.8em,
+    justify: true,
+  )
+
+  #show heading: set block(above: 1.4em, below: 1em)
+
 
   // Set a rule where each new depth == 1 heading resets counter
   // of each lypst box

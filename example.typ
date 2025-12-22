@@ -4,12 +4,18 @@
 
 #show: lypst_conf.with(header_right: "2025, Term 3")
 
+#let original-logo = read("images/logo.svg")
+#let logo = bytes(original-logo.replace(
+  "#282828",
+  black.to-hex(),
+))
+
 #show: lypst_title(
   title: "MATH2621 Notes",
   subtitle: "Higher Complex Analysis",
   authors: ("Lloyd-G-W",),
-  img: "images/logo.svg",
-  img-height: 40%,
+  img: logo,
+  img-height: 35%,
 )
 
 
@@ -47,8 +53,7 @@
 
 @label
 #theorem()[
-  test test
-  this is actually working?
+  test test this is actually working?
 ] <label2>
 
 
