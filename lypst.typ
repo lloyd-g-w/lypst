@@ -1,7 +1,8 @@
 // Packages
 
 #import "@preview/chic-hdr:0.5.0": *
-#import "@preview/zebraw:0.6.0": *
+#import "@preview/codly:1.3.0": *
+#import "@preview/codly-languages:0.1.1": *
 
 #let lypst_boxes = (
   (name: "Generic", colour: rgb("#e76f51")), // Generic
@@ -33,8 +34,8 @@
     section_label: section_label,
   ))
 
-  // Custom code blocks (mainly for line numbers)
-  #show: zebraw.with(lang: false, background-color: 0)
+  #show: codly-init
+  #codly(zebra-fill: none, stroke: none, display-name: false)
 
   #set page(
     columns: 2,
