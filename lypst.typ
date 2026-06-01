@@ -50,8 +50,8 @@
   #set par(
     leading: 0.55em,
     spacing: parspace,
-    first-line-indent: 1.8em,
-    // first-line-indent: 0pt,
+    // first-line-indent: 1.8em,
+    first-line-indent: 0pt,
     justify: true,
   )
 
