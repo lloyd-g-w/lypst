@@ -21,7 +21,7 @@
 
 // Useful variables
 #let parspace = 0.55em
-
+#let varnothing = $diameter$
 
 #let lypst_state = state("lypst_state", (
   header_right: "2025, Term 3",
