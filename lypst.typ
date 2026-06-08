@@ -23,6 +23,7 @@
 // Useful variables
 #let parspace = 0.55em
 #let varnothing = $diameter$
+#let inv(x) = $#x^(-1)$
 
 #let lypst_state = state("lypst_state", (
   header_right: "2025, Term 3",
@@ -34,6 +35,12 @@
     header_right: header_right,
     section_label: section_label,
   ))
+
+  // Use horizontal in inline math but regular in display
+  #show math.equation.where(block: false): it => {
+    set math.frac(style: "horizontal")
+    it
+  }
 
   #show: codly-init
   #codly(zebra-fill: none, stroke: none, display-name: false)
