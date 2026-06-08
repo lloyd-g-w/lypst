@@ -22,7 +22,14 @@
 
 // Useful variables
 #let parspace = 0.55em
-#let varnothing = $diameter$
+#let varnothing = math.diameter
+
+#let implies = math.arrow.r.double
+#let implied = (
+  by: math.arrow.l.double,
+)
+
+// Useful functions in math mode
 #let inv(x) = $#x^(-1)$
 
 #let lypst_state = state("lypst_state", (
