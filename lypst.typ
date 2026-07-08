@@ -35,18 +35,29 @@
 #let lypst_state = state("lypst_state", (
   header_right: "2025, Term 3",
   section_label: "Section",
+  wrap_inline_eqs: false,
 ))
-#let lypst_conf(header_right: "2025, Term 2", section_label: "Section", doc) = [
-
+#let lypst_conf(
+  header_right: "2025, Term 2",
+  section_label: "Section",
+  wrap_inline_eqs: false,
+  doc,
+) = [
   #lypst_state.update(old => (
     header_right: header_right,
     section_label: section_label,
+    wrap_inline_eqs: wrap_inline_eqs,
   ))
 
   // Use horizontal in inline math but regular in display
+  // If no wrap inline eqs then put it in a box
   #show math.equation.where(block: false): it => {
     set math.frac(style: "horizontal")
-    it
+    if wrap_inline_eqs {
+      it
+    } else {
+      box(it)
+    }
   }
 
   #show: codly-init
