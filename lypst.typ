@@ -3,6 +3,7 @@
 #import "@preview/chic-hdr:0.5.0": *
 #import "@preview/codly:1.3.0": *
 #import "@preview/codly-languages:0.1.1": *
+#import "@preview/cetz:0.5.1"
 
 #let lypst_boxes = (
   (name: "Generic", colour: rgb("#e76f51")), // Generic
@@ -21,18 +22,43 @@
 
 // Useful variables
 #let parspace = 0.55em
+#let varnothing = math.diameter
 
+#let implies = math.arrow.r.double
+#let implied = (
+  by: math.arrow.l.double,
+)
+
+// Useful functions in math mode
+#let inv(x) = $#x^(-1)$
 
 #let lypst_state = state("lypst_state", (
   header_right: "2025, Term 3",
   section_label: "Section",
+  wrap_inline_eqs: false,
 ))
-#let lypst_conf(header_right: "2025, Term 2", section_label: "Section", doc) = [
-
+#let lypst_conf(
+  header_right: "2025, Term 2",
+  section_label: "Section",
+  wrap_inline_eqs: false,
+  doc,
+) = [
   #lypst_state.update(old => (
     header_right: header_right,
     section_label: section_label,
+    wrap_inline_eqs: wrap_inline_eqs,
   ))
+
+  // Use horizontal in inline math but regular in display
+  // If no wrap inline eqs then put it in a box
+  #show math.equation.where(block: false): it => {
+    set math.frac(style: "horizontal")
+    if wrap_inline_eqs {
+      it
+    } else {
+      box(it)
+    }
+  }
 
   #show: codly-init
   #codly(zebra-fill: none, stroke: none, display-name: false)
@@ -50,7 +76,8 @@
   #set par(
     leading: 0.55em,
     spacing: parspace,
-    first-line-indent: 1.8em,
+    // first-line-indent: 1.8em,
+    first-line-indent: 0pt,
     justify: true,
   )
 
@@ -306,10 +333,12 @@
 #let generic = make_block(lypst_boxes.at(0))
 #let note = make_block(lypst_boxes.at(1))
 #let definition = make_block(lypst_boxes.at(2))
+#let def = definition
 #let proof = make_block(lypst_boxes.at(3))
 #let lemma = make_block(lypst_boxes.at(4))
 #let theorem = make_block(lypst_boxes.at(5))
 #let corollary = make_block(lypst_boxes.at(6))
+#let coro = corollary
 #let example = make_block(lypst_boxes.at(7))
 #let exercise = make_block(lypst_boxes.at(8))
 #let problem = make_block(lypst_boxes.at(9))
