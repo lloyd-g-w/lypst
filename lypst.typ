@@ -104,6 +104,7 @@
   authors: (none,),
   img: none,
   img-height: 35%,
+  no-contents: false,
 ) = doc => [
   #page(columns: 1, margin: 2cm, numbering: none)[
     #align(center)[
@@ -135,6 +136,11 @@
     ]
 
   ]
+  #doc
+]
+
+
+#let lypst_contents() = doc => [
   #page(columns: 1, margin: 2cm, numbering: "i")[
     #outline()
   ]

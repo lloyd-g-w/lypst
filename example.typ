@@ -16,8 +16,8 @@
   authors: ("Lloyd-G-W",),
   img: logo,
   img-height: 35%,
+  no-pagebreak: true,
 )
-
 
 #show: make_lypst_header("Section 2 -- Higher Complex Analysis")
 #theorem()[
