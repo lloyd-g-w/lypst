@@ -4,6 +4,7 @@
 #import "@preview/codly:1.3.0": *
 #import "@preview/codly-languages:0.1.1": *
 #import "@preview/cetz:0.5.1"
+#import "@preview/intextual:0.1.1"
 
 #let lypst_boxes = (
   (name: "Generic", colour: rgb("#e76f51")), // Generic
@@ -61,6 +62,8 @@
   }
 
   #show: codly-init
+  #show: intertext-rule
+
   #codly(zebra-fill: none, stroke: none, display-name: false)
 
   #set page(
@@ -471,3 +474,4 @@
   chic-offset(18pt),
   chic-height(2cm),
 )
+
