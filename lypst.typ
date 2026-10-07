@@ -4,6 +4,8 @@
 #import "@preview/codly:1.3.0": *
 #import "@preview/codly-languages:0.1.1": *
 #import "@preview/cetz:0.5.1"
+#import "@preview/cetz:0.5.1": canvas, draw
+#import "@preview/itemize:0.2.0" as el
 #import "@preview/intextual:0.1.1": *
 
 #let lypst_boxes = (
@@ -63,6 +65,8 @@
 
   #show: codly-init
   #show: intertext-rule
+  #show: el.default-enum-list
+  #show ref: el.ref-enum.with(full: true)
 
   #codly(zebra-fill: none, stroke: none, display-name: false)
 
