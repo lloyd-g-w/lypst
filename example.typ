@@ -57,6 +57,7 @@
   test test this is actually working?
 ] <label2>
 
+test
 
 #theorem(nonum)[
   this is a test test dfgmokdmfgokm

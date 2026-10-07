@@ -7,6 +7,7 @@
 #import "@preview/cetz:0.5.1": canvas, draw
 #import "@preview/itemize:0.2.0" as el
 #import "@preview/intextual:0.1.1": *
+#import "@preview/theorion:0.5.0": make-frame, richer-counter
 
 #let lypst_boxes = (
   (name: "Generic", colour: rgb("#e76f51")), // Generic
@@ -21,6 +22,152 @@
   (name: "Problem", colour: rgb("#1b4965")),
   (name: "Code", colour: rgb("#adadad")),
 )
+
+// Boxes
+//
+// Numbering, counters and references are handled by theorion; the drawing is
+// ours. Each box kind has its own counter, prefixed by the level-1 heading.
+//
+// Usage:
+//   #theorem[body]                     Theorem 1.2
+//   #theorem(title: "Euclid")[body]    Theorem 1.2 (Euclid)
+//   #theorem(nonum)[body]              unnumbered
+//   #theorem(nobox)[body]              bold "Theorem 1.2." inline, no box
+//   #theorem(nonum, nobox)[body]       bold "Theorem." inline, no box
+//   (named `nonum: true` / `nobox: true` also work)
+
+#let nonum = "lypst_nonum_flag"
+#let nobox = "lypst_nobox_flag"
+
+#let __lypst_has_title(title) = (
+  (type(title) == str and title != "")
+    or (type(title) == content and title != [] and title != [#""])
+)
+
+// Render function handed to theorion. `prefix` is none for unnumbered boxes.
+#let __lypst_render(
+  name,
+  colour,
+  ctr,
+  prefix: none,
+  title: "",
+  full-title: "",
+  nobox: false,
+  body,
+) = {
+  let is_generic = name == "Generic"
+  let has_title = __lypst_has_title(title)
+  let numbered = prefix != none
+  let num = if numbered { context (ctr.display)("1.1") } else { none }
+
+  // Header text, e.g. "Theorem 1.2 (title)" or for generic "title 1.2"
+  let header = if is_generic {
+    let parts = ()
+    if has_title { parts.push(title) }
+    if numbered { parts.push(num) }
+    if parts.len() > 0 { parts.join(" ") } else { none }
+  } else {
+    [#name#if numbered [ #num]#if has_title [ (#title)]]
+  }
+
+  if nobox {
+    return block(width: 100%, breakable: true)[
+      #if header != none [*#header.* ]#body
+    ]
+  }
+
+  layout(size => {
+    let bg_colour = colour.lighten(90%)
+    let border_widths = (left: 3.5pt, rest: 1.5pt)
+
+    let title_content = box(width: 0.8 * size.width + 2pt)[
+      #block(
+        fill: white,
+        inset: 0.6em,
+        radius: 3pt,
+        stroke: 1pt + colour,
+      )[#text(weight: "bold", header)]
+    ]
+
+    // Title overlaps the top of the coloured box by `overlap`.
+    let overlap = 0.9em
+    let title_height = measure(title_content).height
+    let headroom = title_height - overlap
+
+    let rest_inset = 1.0em
+    let top_inset = if header != none { 1.5em } else { rest_inset }
+
+    let main = block(
+      width: 100%,
+      fill: colour,
+      radius: 5pt,
+      inset: border_widths,
+    )[
+      #block(
+        width: 100%,
+        fill: bg_colour,
+        radius: 4pt,
+        inset: (top: top_inset, rest: rest_inset),
+      )[#body]
+    ]
+
+    block(breakable: false, width: 100%)[
+      #if header != none { v(headroom) }
+      #main
+      #if header != none {
+        place(top + left, dx: 8pt, title_content)
+      }
+    ]
+  })
+}
+
+// Returns (env-function, show-rule) for one box kind.
+#let __lypst_make(box) = {
+  let id = "lypst-" + lower(box.name)
+  let ctr = richer-counter(identifier: id, inherited-levels: 1)
+  let (_, frame-box, frame, show-frame) = make-frame(
+    id,
+    box.name,
+    counter: ctr,
+    render: __lypst_render.with(box.name, box.colour, ctr),
+  )
+
+  let env = (..args) => {
+    let pos = args.pos()
+    let named = args.named()
+    let body = pos.last()
+    let flags = pos.slice(0, -1)
+
+    let is_nonum = named.remove("nonum", default: false) or flags.contains(nonum)
+    let is_nobox = named.remove("nobox", default: false) or flags.contains(nobox)
+    let title = named.remove("title", default: "")
+    if title == none { title = "" }
+
+    let f = if is_nonum { frame-box } else { frame }
+    f(title: title, nobox: is_nobox, ..named, body)
+  }
+
+  (env, show-frame)
+}
+
+#let __lypst_envs = lypst_boxes.map(__lypst_make)
+
+// Applies every box's show rule (figure styling + references).
+#let __lypst_box_rules(doc) = __lypst_envs.fold(doc, (d, e) => (e.at(1))(d))
+
+#let generic = __lypst_envs.at(0).at(0)
+#let note = __lypst_envs.at(1).at(0)
+#let definition = __lypst_envs.at(2).at(0)
+#let def = definition
+#let proof = __lypst_envs.at(3).at(0)
+#let lemma = __lypst_envs.at(4).at(0)
+#let theorem = __lypst_envs.at(5).at(0)
+#let corollary = __lypst_envs.at(6).at(0)
+#let coro = corollary
+#let example = __lypst_envs.at(7).at(0)
+#let exercise = __lypst_envs.at(8).at(0)
+#let problem = __lypst_envs.at(9).at(0)
+#let code = __lypst_envs.at(10).at(0)
 
 
 // Useful variables
@@ -91,42 +238,8 @@
   #show heading: set block(above: 1.4em, below: 1em)
 
 
-  // Set a rule where each new depth == 1 heading resets counter
-  // of each lypst box
-  #show heading: it => {
-    if (it.depth == 1) {
-      for box in lypst_boxes {
-        counter(box.name).update(0)
-        counter(figure.where(kind: box.name)).update(0)
-      }
-    }
-    it
-  }
-
-  #show ref: it => {
-    let el = it.element
-    if el != none and el.func() == figure {
-      // Check if the figure kind matches one of our defined boxes
-      let is_lypst = lypst_boxes.any(b => b.name == el.kind)
-
-      if is_lypst {
-        let loc = el.location()
-        // Get Chapter number AT THE LOCATION of the theorem
-        let ch_count = counter(heading).at(loc)
-        let ch_num = if ch_count.len() > 0 { ch_count.first() } else { 0 }
-
-        // Get Theorem number AT THE LOCATION of the theorem
-        let thm_num = counter(figure.where(kind: el.kind)).at(loc).first()
-
-        // Generate the link text
-        link(loc)[#el.supplement #ch_num.#thm_num]
-      } else {
-        it
-      }
-    } else {
-      it
-    }
-  }
+  // Box styling, numbering and references (theorion)
+  #show: __lypst_box_rules
 
   #doc
 ]
@@ -182,174 +295,6 @@
 ]
 
 
-#let __template_block(title, body, block_name, colour, nonum) = {
-  let inner = context {
-    layout(size => {
-      let block_counter = counter(block_name)
-      let bg_colour = colour.lighten(90%)
-      let border_widths = (left: 3.5pt, rest: 1.5pt)
-
-      let is_generic = block_name == "Generic"
-
-      let optional_title_text = if (title != none and title != "") {
-        if (not is_generic) { [(#title)] } else { [#title] }
-      } else { none }
-
-      let has_title_content = (
-        not is_generic or optional_title_text != none or nonum == false
-      )
-
-      let final_title_text = text(weight: "bold")[
-        #if nonum {
-          if (is_generic) {
-            [#optional_title_text]
-          } else {
-            [#block_name #optional_title_text]
-          }
-        } else {
-          context {
-            let h_count = counter(heading).get()
-            if (is_generic) {
-              [#optional_title_text #h_count.first().#block_counter.display()]
-            } else {
-              [#block_name #h_count.first().#block_counter.display()
-                #optional_title_text
-              ]
-            }
-          }
-        }
-      ]
-
-      // Use actual layout width here:
-      let title_width = 0.8 * size.width + 2pt
-
-      let title_content = box(width: title_width)[
-        #block(
-          fill: white,
-          inset: 0.6em,
-          radius: 3pt,
-          stroke: 1pt + colour,
-        )[ #final_title_text ]
-      ]
-
-      // Measure in the *current* layout context
-      let title_height = measure(title_content).height
-
-      // How much blank space we always reserve above the body box.
-      // Needs to be >= (max expected title height) - gap.
-      let gap = -0.9em // gap between title and coloured box
-      let headroom = title_height + gap
-
-      let rest_inset = 1.0em
-      let top_inset = if has_title_content { 1.5em } else { rest_inset }
-
-      let main = block(
-        width: 100%,
-        fill: colour,
-        radius: 5pt,
-        inset: border_widths,
-      )[
-        #block(
-          width: 100%,
-          fill: bg_colour,
-          radius: 4pt,
-          inset: (top: top_inset, rest: rest_inset),
-        )[ #body ]
-      ]
-
-      let content = block(breakable: false, width: 100%)[
-        #if (not nonum) { block_counter.step() }
-
-        // Reserve the space above the body box (independent of title height)
-        #if has_title_content {
-          v(headroom)
-        }
-
-        // The coloured theorem box itself
-        #main
-
-        // Draw the title: its *bottom* is (gap) above the top of `main`.
-        #if has_title_content {
-          place(
-            top + left,
-            dx: 8pt,
-            dy: headroom - gap - title_height,
-            title_content,
-          )
-        }
-      ]
-
-      content
-      //
-      // // Wrap in a figure for refs if numbered
-      // if nonum {
-      //   content
-      // } else {
-      //   figure(
-      //     kind: block_name,
-      //     supplement: block_name,
-      //     outlined: false,
-      //     placement: none,
-      //     caption: none,
-      //     numbering: "1",
-      //   )[ #align(left)[#content] ]
-      // }
-    })
-  }
-
-  if nonum {
-    inner
-  } else {
-    figure(
-      kind: block_name,
-      supplement: block_name,
-      outlined: false,
-      placement: none,
-      caption: none,
-      numbering: "1",
-    )[ #align(left)[#inner] ]
-  }
-}
-
-
-#let nonum = "lypst_nonum_flag"
-
-#let make_block(box) = {
-  let block_name = box.name
-  let block_colour = box.colour
-
-  (..args) => {
-    let pos = args.pos()
-    let named = args.named()
-    let body = pos.last()
-    let flags = if pos.len() > 1 { pos.slice(0, -1) } else { () }
-    let is_nonum = named.at("nonum", default: false) or flags.contains(nonum)
-
-    let title = named.at("title", default: none)
-
-    __template_block(
-      title,
-      body,
-      block_name,
-      block_colour,
-      is_nonum,
-    )
-  }
-}
-
-#let generic = make_block(lypst_boxes.at(0))
-#let note = make_block(lypst_boxes.at(1))
-#let definition = make_block(lypst_boxes.at(2))
-#let def = definition
-#let proof = make_block(lypst_boxes.at(3))
-#let lemma = make_block(lypst_boxes.at(4))
-#let theorem = make_block(lypst_boxes.at(5))
-#let corollary = make_block(lypst_boxes.at(6))
-#let coro = corollary
-#let example = make_block(lypst_boxes.at(7))
-#let exercise = make_block(lypst_boxes.at(8))
-#let problem = make_block(lypst_boxes.at(9))
-#let code = make_block(lypst_boxes.at(10))
 
 // CHIC
 
