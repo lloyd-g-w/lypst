@@ -177,6 +177,14 @@
 // ---------------------------------------- START USEFUL VARIABLES
 #let parspace = 0.55em
 #let varnothing = math.diameter
+#let pfsq = {
+  h(1fr)
+  sym.wj
+  sym.space.nobreak
+  $square.stroked$
+}
+
+#let neq(body) = math.equation(block: true, numbering: "(1)", body)
 
 #let bt = b => text(weight: "bold")[#b]
 #let bm = b => math.bold(b)
