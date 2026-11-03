@@ -138,8 +138,12 @@
     let body = pos.last()
     let flags = pos.slice(0, -1)
 
-    let is_nonum = named.remove("nonum", default: false) or flags.contains(nonum)
-    let is_nobox = named.remove("nobox", default: false) or flags.contains(nobox)
+    let is_nonum = (
+      named.remove("nonum", default: false) or flags.contains(nonum)
+    )
+    let is_nobox = (
+      named.remove("nobox", default: false) or flags.contains(nobox)
+    )
     let title = named.remove("title", default: "")
     if title == none { title = "" }
 
@@ -170,9 +174,14 @@
 #let code = __lypst_envs.at(10).at(0)
 
 
-// Useful variables
+// ---------------------------------------- START USEFUL VARIABLES
 #let parspace = 0.55em
 #let varnothing = math.diameter
+
+#let bt = b => text(weight: "bold")[#b]
+#let bm = b => math.bold(b)
+
+// ---------------------------------------- END USEFUL VARIABLES
 
 #let implies = math.arrow.r.double
 #let implied = (
