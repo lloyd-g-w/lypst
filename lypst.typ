@@ -21,6 +21,7 @@
   (name: "Exercise", colour: rgb("#4a8f97")),
   (name: "Problem", colour: rgb("#1b4965")),
   (name: "Code", colour: rgb("#adadad")),
+  (name: "Solution", colour: rgb("#62b6cb")),
 )
 
 // Boxes
