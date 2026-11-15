@@ -173,6 +173,7 @@
 #let exercise = __lypst_envs.at(8).at(0)
 #let problem = __lypst_envs.at(9).at(0)
 #let code = __lypst_envs.at(10).at(0)
+#let solution = __lypst_envs.at(11).at(0)
 
 
 // ---------------------------------------- START USEFUL VARIABLES
