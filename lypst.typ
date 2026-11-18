@@ -22,6 +22,7 @@
   (name: "Problem", colour: rgb("#1b4965")),
   (name: "Code", colour: rgb("#adadad")),
   (name: "Solution", colour: rgb("#62b6cb")),
+  (name: "Claim", colour: rgb("#8ab17d")),
 )
 
 // Boxes
@@ -174,6 +175,7 @@
 #let problem = __lypst_envs.at(9).at(0)
 #let code = __lypst_envs.at(10).at(0)
 #let solution = __lypst_envs.at(11).at(0)
+#let claim = __lypst_envs.at(12).at(0)
 
 
 // ---------------------------------------- START USEFUL VARIABLES
