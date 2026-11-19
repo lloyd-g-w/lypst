@@ -84,5 +84,9 @@ test
   ```
 ]
 
+#generic(title: "A custom box")[A numbered generic box.] <generic-a>
+
+See @generic-a.
+
 @label2
 

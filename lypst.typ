@@ -150,6 +150,12 @@
     let title = named.remove("title", default: "")
     if title == none { title = "" }
 
+    // Use a titled generic box's title as its default reference supplement.
+    let use_title = box.name == "Generic" and not is_nonum and __lypst_has_title(title)
+    if use_title and "supplement" not in named {
+      named.insert("supplement", title)
+    }
+
     let f = if is_nonum { frame-box } else { frame }
     f(title: title, nobox: is_nobox, ..named, body)
   }
