@@ -23,6 +23,7 @@
   (name: "Code", colour: rgb("#adadad")),
   (name: "Solution", colour: rgb("#62b6cb")),
   (name: "Claim", colour: rgb("#8ab17d")),
+  (name: "Algorithm", colour: rgb("#A44A78")),
 )
 
 // Boxes
@@ -176,6 +177,7 @@
 #let code = __lypst_envs.at(10).at(0)
 #let solution = __lypst_envs.at(11).at(0)
 #let claim = __lypst_envs.at(12).at(0)
+#let algorithm = __lypst_envs.at(13).at(0)
 
 
 // ---------------------------------------- START USEFUL VARIABLES
